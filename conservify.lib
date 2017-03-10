@@ -163,4 +163,36 @@ X B_OUT 12 800 -500 200 L 50 50 1 1 I
 ENDDRAW
 ENDDEF
 #
+# adafruit-solar-charger
+#
+DEF adafruit-solar-charger U 0 40 Y Y 1 F N
+F0 "U" -100 100 60 H V C CNN
+F1 "adafruit-solar-charger" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -850 250 600 -250 0 1 0 N
+X VBAT 1 -1050 150 200 R 50 50 1 1 I
+X GND 2 -1050 50 200 R 50 50 1 1 I
+X GND 3 -1050 -50 200 R 50 50 1 1 I
+X VLOAD 4 -1050 -150 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# pololu-vreg
+#
+DEF pololu-vreg U 0 40 Y Y 1 F N
+F0 "U" 0 100 60 H V C CNN
+F1 "pololu-vreg" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -550 300 350 -300 0 1 0 N
+X VOUT 1 -750 -150 200 R 50 50 1 1 I
+X GND 2 -750 -50 200 R 50 50 1 1 I
+X VIN 3 -750 50 200 R 50 50 1 1 I
+X SHDN 4 -750 150 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
 #End Library

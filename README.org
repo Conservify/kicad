@@ -1,0 +1,7 @@
+* README
+
+  KiCad parts and footprints.
+
+* Thanks
+
+  [[https://github.com/freetronics/freetronics_kicad_library][Freetronics]]

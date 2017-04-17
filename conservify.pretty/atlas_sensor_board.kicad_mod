@@ -1,0 +1,18 @@
+(module atlas_scientific:atlas_sensor_board (layer F.Cu) (tedit 58C6B5FF)
+  (fp_text reference U7 (at 1.27 0.5) (layer F.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value ATLAS_SENSOR (at 1.27 -2.54) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_line (start -8.89 6.35) (end -8.89 -6.35) (layer F.SilkS) (width 0.15))
+  (fp_line (start 11.43 6.35) (end -8.89 6.35) (layer F.SilkS) (width 0.15))
+  (fp_line (start 11.43 -6.35) (end 11.43 6.35) (layer F.SilkS) (width 0.15))
+  (fp_line (start -8.89 -6.35) (end 11.43 -6.35) (layer F.SilkS) (width 0.15))
+  (pad 1 thru_hole circle (at -7.62 -2.54) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
+  (pad 2 thru_hole circle (at -7.62 0) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
+  (pad 4 thru_hole circle (at -7.62 2.54) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
+  (pad 6 thru_hole circle (at 10.16 -2.54) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
+  (pad 5 thru_hole circle (at 10.16 0) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
+  (pad 3 thru_hole circle (at 10.16 2.54) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask))
+)

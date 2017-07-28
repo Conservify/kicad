@@ -1,0 +1,24 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#
+# af_lp_charger_socket
+#
+DEF af_lp_charger_socket U 0 40 Y Y 1 F N
+F0 "U" 0 0 60 H V C CNN
+F1 "af_lp_charger_socket" 0 100 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -800 450 550 -250 0 1 0 N
+X BATT- 1 -1000 -150 200 R 50 50 1 1 I
+X BATT+ 2 -1000 -50 200 R 50 50 1 1 I
+X STAT1 3 -1000 50 200 R 50 50 1 1 I
+X STAT2 4 -1000 150 200 R 50 50 1 1 I
+X LOAD- 5 750 -150 200 L 50 50 1 1 I
+X LOAD+ 6 750 -50 200 L 50 50 1 1 I
+X DC+ ~ -1000 250 200 R 50 50 1 1 I
+X DC- ~ -1000 350 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+#End Library

@@ -33,18 +33,21 @@ def make_authority_ref(fields):
             return new_ref
         i += 1
 
-def update_fields(filename, authority_fields, quantities, ws, add_missing=False):
+def update_fields(filename, authority_fields, quantities, uses, ws, add_missing=False):
     all_child_fields = kifield.extract_part_fields_from_sch(filename, recurse=True)
 
     authority_fields_by_key = {}
     for ref in authority_fields:
         authority_fields_by_key[get_part_key(authority_fields[ref])] = authority_fields[ref]
 
+    name = os.path.basename(filename)
     modified = False
     for row, ref in enumerate(all_child_fields):
         child_fields = all_child_fields[ref]
         key = get_part_key(child_fields)
         quantities[key] = quantities.get(key, 0) + 1
+        if name not in uses.get(key, []):
+            uses[key] = uses.get(key, []) + [name]
         old_spn = child_fields.get('spn1', "")
         fp = child_fields['footprint']
         value = child_fields['value']
@@ -171,6 +174,7 @@ def main():
 
     updated_authority_fields = copy.deepcopy(authority_fields)
     quantities = {}
+    uses = {}
 
     wb = pyxl.Workbook()
     wb_filename = os.path.abspath("conservify.xlsx")
@@ -180,7 +184,7 @@ def main():
         os.chdir(os.path.dirname(child_filename))
         name = os.path.basename(child_filename)
         ws = wb.create_sheet(name)
-        updated_authority_fields = update_fields(child_filename, updated_authority_fields, quantities, ws, add_missing=add_missing)
+        updated_authority_fields = update_fields(child_filename, updated_authority_fields, quantities, uses, ws, add_missing=add_missing)
 
     if authority_modified:
         write_authority(authority_filename, updated_authority_fields)
@@ -193,7 +197,7 @@ def main():
     refs_by_key = get_refs_by_key(updated_authority_fields)
     for row, key in enumerate(get_all_part_keys(updated_authority_fields)):
         refs = refs_by_key[key]
-        ws.cell(row=row + 2, column=1).value = ''
+        ws.cell(row=row + 2, column=1).value = ','.join(uses.get(key, []))
         ws.cell(row=row + 2, column=2).value = updated_authority_fields[refs[0]]['footprint']
         ws.cell(row=row + 2, column=3).value = updated_authority_fields[refs[0]]['value']
         ws.cell(row=row + 2, column=4).value = updated_authority_fields[refs[0]].get('spn1')

@@ -25,6 +25,14 @@ def fill_quantity_ws(ws):
     ws.cell(row=1, column=8).value = 'price100'
     ws.cell(row=1, column=9).value = 'price1000'
 
+def make_authority_ref(fields):
+    i = len(fields)
+    while True:
+        new_ref = "F" + str(i)
+        if new_ref not in fields:
+            return new_ref
+        i += 1
+
 def update_fields(filename, authority_fields, quantities, ws, add_missing=False):
     all_child_fields = kifield.extract_part_fields_from_sch(filename, recurse=True)
 
@@ -51,7 +59,7 @@ def update_fields(filename, authority_fields, quantities, ws, add_missing=False)
             if not add_missing:
                 raise Exception("No authority on part: %s %s (%s)" % (ref, fp, old_spn))
             else:
-                new_ref = "F" + str(len(authority_fields))
+                new_ref = make_authority_ref(authority_fields)
                 logger.log(logging.INFO, "Adding missing part authority: %s value=%s fp=%s spn1=%s (%s)" % (ref, value, fp, old_spn, new_ref))
                 authority_fields[new_ref] = child_fields
                 authority_fields_by_key[key] = child_fields
@@ -91,7 +99,7 @@ def backup_file(filename):
         index += 1
 
 def write_authority(filename, fields):
-    authority_fields = ['footprint', 'value', 'spn1', 'supplier1', 'spn2', 'supplier2', 'price']
+    authority_fields = ['footprint', 'value', 'spn1', 'supplier1', 'spn2', 'supplier2']
     with open(filename, 'wb') as f:
         logger.log(logging.INFO, "Writing %s..." % (filename))
         w = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

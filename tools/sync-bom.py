@@ -33,6 +33,25 @@ def make_authority_ref(fields):
             return new_ref
         i += 1
 
+def get_part_key(part):
+    return part['footprint'] + '~' + part['value']
+
+def get_all_part_keys(fields):
+    keys = []
+    for ref in fields:
+        key = get_part_key(fields[ref])
+        if key not in keys:
+            keys.append(key)
+    keys.sort()
+    return keys
+
+def get_refs_by_key(fields):
+    refs_by_key = {}
+    for ref in fields:
+        key = get_part_key(fields[ref])
+        refs_by_key[key] = refs_by_key.get(key, []) + [ref]
+    return refs_by_key
+
 def update_fields(filename, authority_fields, quantities, uses, ws, add_missing=False):
     all_child_fields = kifield.extract_part_fields_from_sch(filename, recurse=True)
 
@@ -89,9 +108,6 @@ def update_fields(filename, authority_fields, quantities, uses, ws, add_missing=
 
     return authority_fields
 
-def get_part_key(part):
-    return part['footprint'] + '~' + part['value']
-
 def backup_file(filename):
     index = 1
     while True:
@@ -120,32 +136,12 @@ def write_authority(filename, fields):
                     values.append('')
             w.writerow(values)
 
-def get_all_part_keys(fields):
-    keys = []
-    for ref in fields:
-        key = get_part_key(fields[ref])
-        if key not in keys:
-            keys.append(key)
-    keys.sort()
-    return keys
-
-def get_refs_by_key(fields):
-    refs_by_key = {}
-    for ref in fields:
-        key = get_part_key(fields[ref])
-        refs_by_key[key] = refs_by_key.get(key, []) + [ref]
-    return refs_by_key
-
-def dedupe_authority(authority_fields):
-    unique = {}
+def check_authority(authority_fields):
     seen_keys = {}
     for ref in authority_fields:
         key = get_part_key(authority_fields[ref])
-        if key not in seen_keys:
-            new_ref = "F" + str(len(unique) + 1)
-            unique[new_ref] = authority_fields[ref]
-            seen_keys[key] = True
-    return unique
+        if key in seen_keys:
+            print key
 
 def main():
     add_missing = True
@@ -167,10 +163,7 @@ def main():
     if os.path.isfile(authority_filename):
         logger.log(logging.INFO, "Reading %s..." % (args.authority))
         authority_fields = kifield.extract_part_fields_from_xlsx(authority_filename)
-        deduped_fields = dedupe_authority(authority_fields)
-        if len(deduped_fields) != len(authority_fields):
-            write_authority(authority_filename, deduped_fields)
-            return
+        check_authority(authority_fields)
 
     updated_authority_fields = copy.deepcopy(authority_fields)
     quantities = {}

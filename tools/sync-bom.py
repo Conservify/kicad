@@ -18,8 +18,8 @@ def fill_quantity_ws(ws):
     ws.cell(row=1, column=1).value = "refs"
     ws.cell(row=1, column=2).value = "footprint"
     ws.cell(row=1, column=3).value = "value"
-    ws.cell(row=1, column=4).value = "supplier1"
-    ws.cell(row=1, column=5).value = "spn1"
+    ws.cell(row=1, column=4).value = "spn1"
+    ws.cell(row=1, column=5).value = "supplier1"
     ws.cell(row=1, column=6).value = "quantity"
     ws.cell(row=1, column=7).value = 'price1'
     ws.cell(row=1, column=8).value = 'price100'

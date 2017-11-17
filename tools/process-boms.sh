@@ -2,6 +2,7 @@
 
 python ./sync-bom.py \
        --authority authority.xlsx \
-       ../../fk-core/hardware/fk-core.sch \
-       ../../fk-weather/hardware/fk-weather.sch \
-       ../../fk-atlas/hardware/fk-atlas.sch
+       ../../../fieldkit/core/hardware/fk-core.sch \
+       ../../../fieldkit/weather/hardware/fk-weather.sch \
+       ../../../fieldkit/sonar/hardware/fk-sonar.sch \
+       ../../../fieldkit/atlas/hardware/fk-atlas.sch

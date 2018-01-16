@@ -1,9 +1,9 @@
-(module MICROSD (layer F.Cu) (tedit 58EE833C)
+(module conservify:MICROSD (layer F.Cu) (tedit 5A593F64)
   (attr smd)
-  (fp_text reference M1 (at 6.87324 3.30454) (layer Cmts.User)
+  (fp_text reference M7 (at 6.87324 3.30454) (layer Cmts.User) hide
     (effects (font (size 1.27 1.27) (thickness 0.1016)))
   )
-  (fp_text value MICROSD (at 7.62 -1.778) (layer Cmts.User)
+  (fp_text value MICROSD (at 7.62 -1.778) (layer Cmts.User) hide
     (effects (font (thickness 0.15)))
   )
   (fp_line (start 12.99972 15.1384) (end 13.99794 15.1384) (layer B.SilkS) (width 0.127))

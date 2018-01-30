@@ -173,7 +173,7 @@ def main():
     wb_filename = os.path.abspath("conservify.xlsx")
 
     for child_filename in args.children:
-        logger.log(logging.INFO, "Processing %s..." % (child_filename))
+        logger.log(logging.INFO, "Processing %s... %s" % (child_filename, os.path.dirname(child_filename)))
         os.chdir(os.path.dirname(child_filename))
         name = os.path.basename(child_filename)
         ws = wb.create_sheet(name)

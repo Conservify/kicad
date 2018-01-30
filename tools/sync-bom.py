@@ -89,7 +89,7 @@ def update_fields(filename, authority_fields, quantities, uses, ws, add_missing=
     if modified:
         logger.log(logging.INFO, "Saving %s" % (filename))
         backup_file(filename)
-        kifield.insert_part_fields_into_sch(all_child_fields, filename, True, False)
+        kifield.insert_part_fields_into_sch(all_child_fields, filename, True, False, False)
 
     fill_quantity_ws(ws)
     refs_by_key = get_refs_by_key(all_child_fields)
@@ -118,8 +118,8 @@ def backup_file(filename):
         index += 1
 
 def write_authority(filename, fields):
-    authority_fields = ['footprint', 'value', 'spn1', 'supplier1', 'spn2', 'supplier2']
-    with open(filename, 'wb') as f:
+    authority_fields = ['footprint', 'value', 'spn1', 'supplier1', 'spn2', 'supplier2', 'price1', 'price100', 'price1000']
+    with open(filename + ".csv", 'wb') as f:
         logger.log(logging.INFO, "Writing %s..." % (filename))
         w = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         w.writerow(['refs'] + authority_fields)
@@ -162,7 +162,10 @@ def main():
     authority_fields = {}
     if os.path.isfile(authority_filename):
         logger.log(logging.INFO, "Reading %s..." % (args.authority))
-        authority_fields = kifield.extract_part_fields_from_xlsx(authority_filename)
+        if authority_filename.endswith("xlsx"):
+            authority_fields = kifield.extract_part_fields_from_xlsx(authority_filename)
+        if authority_filename.endswith("csv"):
+            authority_fields = kifield.extract_part_fields_from_csv(authority_filename)
         check_authority(authority_fields)
 
     updated_authority_fields = copy.deepcopy(authority_fields)
@@ -179,7 +182,7 @@ def main():
         ws = wb.create_sheet(name)
         updated_authority_fields = update_fields(child_filename, updated_authority_fields, quantities, uses, ws, add_missing=add_missing)
 
-    if authority_modified:
+    if authority_modified or True:
         write_authority(authority_filename, updated_authority_fields)
 
     ws = wb.active

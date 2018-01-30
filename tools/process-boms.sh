@@ -1,9 +1,9 @@
 #!/bin/bash
 
-ROOT="/home/jlewallen/fieldkit"
+ROOT="/Users/jlewallen/fieldkit"
 
 python ./sync-bom.py \
-       --authority authority.xlsx \
+       --authority authority.csv \
        $ROOT/core/hardware/fk-core.sch \
        $ROOT/naturalist/hardware/fk-naturalist.sch \
        $ROOT/weather/hardware/sensor-board/fk-weather-sensors.sch \

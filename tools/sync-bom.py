@@ -89,7 +89,7 @@ def update_fields(filename, authority_fields, quantities, uses, ws, add_missing=
     if modified:
         logger.log(logging.INFO, "Saving %s" % (filename))
         backup_file(filename)
-        kifield.insert_part_fields_into_sch(all_child_fields, filename, True, False, False)
+        kifield.insert_part_fields_into_sch(all_child_fields, filename, True, False)
 
     fill_quantity_ws(ws)
     refs_by_key = get_refs_by_key(all_child_fields)
@@ -119,7 +119,7 @@ def backup_file(filename):
 
 def write_authority(filename, fields):
     authority_fields = ['footprint', 'value', 'spn1', 'supplier1', 'spn2', 'supplier2', 'price1', 'price100', 'price1000']
-    with open(filename + ".csv", 'wb') as f:
+    with open(filename, 'wb') as f:
         logger.log(logging.INFO, "Writing %s..." % (filename))
         w = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         w.writerow(['refs'] + authority_fields)
@@ -183,7 +183,7 @@ def main():
         updated_authority_fields = update_fields(child_filename, updated_authority_fields, quantities, uses, ws, add_missing=add_missing)
 
     if authority_modified or True:
-        write_authority(authority_filename, updated_authority_fields)
+        write_authority(authority_filename + "-updated", updated_authority_fields)
 
     ws = wb.active
     ws.title = "all"
@@ -203,6 +203,7 @@ def main():
         ws.cell(row=row + 2, column=8).value = updated_authority_fields[refs[0]].get('price100', 0.0)
         ws.cell(row=row + 2, column=9).value = updated_authority_fields[refs[0]].get('price1000', 0.0)
 
+    logger.log(logging.INFO, "Writing %s..." % (wb_filename))
     wb.save(wb_filename)
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOT="/Users/jlewallen/fieldkit"
+ROOT="/home/jlewallen/fieldkit"
 
 python ./sync-bom.py \
        --authority authority.csv \

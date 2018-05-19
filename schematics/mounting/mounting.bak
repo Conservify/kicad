@@ -1,0 +1,105 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:switches
+LIBS:relays
+LIBS:motors
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:fk-sonar-cache
+EELAYER 25 0
+EELAYER END
+$Descr A3 16535 11693
+encoding utf-8
+Sheet 1 1
+Title "fk-core"
+Date "2017-03-05"
+Rev "0.1"
+Comp "Conservify"
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MOUNT_HOLE M?
+U 1 1 5AED2AD2
+P 3450 6000
+F 0 "M?" H 3450 6150 50  0000 C CNN
+F 1 "MOUNT_HOLE" H 3450 5850 50  0001 C CNN
+F 2 "RocketScreamKicadLibrary:HOLE_NPTH_2.2MM" H 3475 5775 50  0001 C CNN
+F 3 "" H 3450 6000 50  0000 C CNN
+	1    3450 6000
+	1    0    0    -1  
+$EndComp
+$Comp
+L MOUNT_HOLE M?
+U 1 1 5AED2AD3
+P 3750 6000
+F 0 "M?" H 3750 6150 50  0000 C CNN
+F 1 "MOUNT_HOLE" H 3750 5850 50  0001 C CNN
+F 2 "RocketScreamKicadLibrary:HOLE_NPTH_2.2MM" H 3775 5775 50  0001 C CNN
+F 3 "" H 3750 6000 50  0000 C CNN
+	1    3750 6000
+	1    0    0    -1  
+$EndComp
+$Comp
+L MOUNT_HOLE M?
+U 1 1 5AED2AD4
+P 4050 6000
+F 0 "M?" H 4050 6150 50  0000 C CNN
+F 1 "MOUNT_HOLE" H 4050 5850 50  0001 C CNN
+F 2 "RocketScreamKicadLibrary:HOLE_NPTH_2.2MM" H 4075 5775 50  0001 C CNN
+F 3 "" H 4050 6000 50  0000 C CNN
+	1    4050 6000
+	1    0    0    -1  
+$EndComp
+$Comp
+L MOUNT_HOLE M?
+U 1 1 5AED2AD5
+P 4350 6000
+F 0 "M?" H 4350 6150 50  0000 C CNN
+F 1 "MOUNT_HOLE" H 4350 5850 50  0001 C CNN
+F 2 "RocketScreamKicadLibrary:HOLE_NPTH_2.2MM" H 4375 5775 50  0001 C CNN
+F 3 "" H 4350 6000 50  0000 C CNN
+	1    4350 6000
+	1    0    0    -1  
+$EndComp
+Text Notes 3200 5550 0    180  ~ 36
+MOUNTING 
+Text Notes 3700 6200 0    60   ~ 0
+M2.5 size
+Wire Notes Line
+	2850 5200 2850 6600
+Wire Notes Line
+	2850 6600 4950 6600
+Wire Notes Line
+	4950 6600 4950 5200
+Wire Notes Line
+	4950 5200 2850 5200
+$EndSCHEMATC

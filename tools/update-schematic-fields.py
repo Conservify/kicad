@@ -217,11 +217,62 @@ def read_csv(filename):
 def read_xlsx(filename):
     wb = pyxl.load_workbook(filename)
     ws = wb.active
+    rows = []
+    header = None
     for number, row in enumerate(ws.rows):
-        width = len(row) - [c.value for c in row].count(None)
-        header = [cell for cell in row]
+        row = [cell.value for cell in row]
+        if header is None:
+            header = row
+            continue
 
-    return []
+        keyed = {}
+        for i, value in enumerate(row):
+            if header[i] is not None:
+                keyed[header[i]] = value
+
+        rows.append(keyed)
+
+    return rows
+
+def update_xlsx_fields(filename, source):
+    wb = pyxl.load_workbook(filename)
+    ws = wb.active
+    header = None
+    seen = []
+    for number, row in enumerate(ws.rows):
+        row = [cell.value for cell in row]
+        if header is None:
+            header = row
+            continue
+        keyed = {}
+        for i, value in enumerate(row):
+            if header[i] is not None:
+                keyed[header[i]] = value
+
+        key = " ".join([keyed[v] for v in key_fields])
+        f = source.keyed.get(key)
+        if f:
+            for name in [ 'mfn', 'mfp' ]:
+                column = header.index(name)
+                ws.cell(row=number + 1, column = column + 1).value = f.data[name]
+            seen.append(key)
+        else:
+            logger.log(logging.ERROR, "Missing %s", key)
+
+    bottom = ws.max_row
+
+    for part in source.keyed.values():
+        if part.key not in seen:
+            pprint.pprint([ 'Adding to XLSX: ', bottom, part.key ])
+            ws.cell(row = bottom, column = 2).value = part.data['footprint']
+            ws.cell(row = bottom, column = 3).value = part.data['value']
+            ws.cell(row = bottom, column = 4).value = part.data['mfn']
+            ws.cell(row = bottom, column = 5).value = part.data['mfp']
+            ws.cell(row = bottom, column = 6).value = part.data['spn1']
+            ws.cell(row = bottom, column = 7).value = part.data['supplier1']
+            bottom += 1
+
+    wb.save("updated-" + filename)
 
 def configure_logging():
     logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s')
@@ -242,7 +293,9 @@ def main():
 
     errors = False
 
-    source_fields = FieldsTable(read_csv("test.csv"))
+    source_fields = FieldsTable(read_xlsx("authority.xlsx"))
+
+    # update_xlsx_fields("authority.xlsx", source_fields)
 
     if args.remove:
         for child_filename in args.files:

@@ -1,11 +1,3 @@
 EESchema-DOCLIB  Version 2.0
 #
-$CMP PCF8523
-D Serial Flash
-$ENDCMP
-#
-$CMP SPH0645
-D Serial Flash
-$ENDCMP
-#
 #End Doc Library

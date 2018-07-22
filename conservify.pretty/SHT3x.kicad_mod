@@ -1,5 +1,5 @@
-(module SHT3x (layer F.Cu) (tedit 5A0F5B92)
-  (fp_text reference REF** (at 0 3.575) (layer F.SilkS)
+(module SHT3x (layer F.Cu) (tedit 5B54CF7F)
+  (fp_text reference REF** (at 0 3.575) (layer F.Fab)
     (effects (font (size 1 1) (thickness 0.15)))
   )
   (fp_text value SHT3x (at 0 2.225) (layer F.Fab)

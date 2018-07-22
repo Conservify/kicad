@@ -1,6 +1,6 @@
-(module conservify:MICRO-USB (layer F.Cu) (tedit 599DEF3A)
+(module MICRO-USB (layer F.Cu) (tedit 599DEF3A)
   (tags MICRO-USB)
-  (fp_text reference J1 (at -26.162 0) (layer F.SilkS) hide
+  (fp_text reference J1 (at -2.794 2.54) (layer F.SilkS) hide
     (effects (font (size 0.8 0.8) (thickness 0.15)))
   )
   (fp_text value MICRO-USB (at 0 4.318) (layer F.Fab) hide

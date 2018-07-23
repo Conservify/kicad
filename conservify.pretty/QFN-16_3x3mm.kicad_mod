@@ -1,6 +1,6 @@
-(module QFN-16_3x3mm (layer F.Cu) (tedit 5666E2D5)
+(module QFN-16_3x3mm (layer F.Cu) (tedit 5B561DA2)
   (tags QFN)
-  (fp_text reference REF** (at 0 -2.794) (layer F.SilkS)
+  (fp_text reference REF** (at 0 -2.794) (layer F.SilkS) hide
     (effects (font (size 1 1) (thickness 0.15)))
   )
   (fp_text value QFN-16_3x3mm (at 0 3.048) (layer F.Fab)

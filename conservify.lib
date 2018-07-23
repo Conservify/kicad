@@ -888,6 +888,32 @@ X Pin_3 3 -200 -100 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
+# CONN_01x03_SERIAL
+#
+DEF CONN_01x03_SERIAL J 0 0 N Y 1 F N
+F0 "J" 0 200 50 H V C CNN
+F1 "CONN_01x03_SERIAL" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_??x*mm*
+ Connector*:*1x??x*mm*
+ Pin?Header?Straight?1X*
+ Pin?Header?Angled?1X*
+ Socket?Strip?Straight?1X*
+ Socket?Strip?Angled?1X*
+$ENDFPLIST
+DRAW
+S -50 -95 0 -105 1 1 6 N
+S -50 5 0 -5 1 1 6 N
+S -50 105 0 95 1 1 6 N
+S -50 150 50 -150 1 1 10 f
+X GND 1 -200 100 150 R 50 39 1 1 P
+X D31 2 -200 0 150 R 50 39 1 1 P
+X D30 3 -200 -100 150 R 50 39 1 1 P
+ENDDRAW
+ENDDEF
+#
 # CONN_01x04
 #
 DEF CONN_01x04 J 0 40 Y N 1 F N
@@ -1171,7 +1197,7 @@ ENDDEF
 DEF ~CONN_02x05_SWD J 0 40 Y N 1 F N
 F0 "J" 0 300 60 H V C CNN
 F1 "CONN_02x05_SWD" -50 -350 60 H I C CNN
-F2 "conservify:HDR_2x5_Pitch1.27mm" 0 -450 60 H I C CNN
+F2 "" 0 -450 60 H I C CNN
 F3 "" -50 -150 60 H V C CNN
 $FPLIST
  Connector*:*2x??x*mm*

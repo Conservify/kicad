@@ -1,6 +1,6 @@
-(module S2B-PH-SM4-TB (layer F.Cu) (tedit 562761B1)
+(module S2B-PH-SM4-TB (layer F.Cu) (tedit 5B561DE4)
   (tags "JST PH")
-  (fp_text reference REF** (at 0 -5.588) (layer F.SilkS)
+  (fp_text reference REF** (at 0 -5.588) (layer F.SilkS) hide
     (effects (font (size 1 1) (thickness 0.15)))
   )
   (fp_text value S2B-PH-SM4-TB (at 0 5.842 180) (layer F.Fab)

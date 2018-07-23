@@ -1,5 +1,5 @@
-(module MF-PSMF020X (layer F.Cu) (tedit 55AF8BE5)
-  (fp_text reference REF** (at 0 -1.778) (layer F.SilkS)
+(module MF-PSMF020X (layer F.Cu) (tedit 5B561D72)
+  (fp_text reference REF** (at 0 -1.778) (layer F.SilkS) hide
     (effects (font (size 1 1) (thickness 0.15)))
   )
   (fp_text value MF-PSMF020X (at 0 1.778) (layer F.Fab)

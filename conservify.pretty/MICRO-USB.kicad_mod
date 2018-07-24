@@ -1,6 +1,6 @@
-(module MICRO-USB (layer F.Cu) (tedit 599DEF3A)
+(module conservify:MICRO-USB (layer F.Cu) (tedit 5B5667E6)
   (tags MICRO-USB)
-  (fp_text reference J1 (at -2.794 2.54) (layer F.SilkS) hide
+  (fp_text reference J9 (at -26.162 0) (layer F.SilkS) hide
     (effects (font (size 0.8 0.8) (thickness 0.15)))
   )
   (fp_text value MICRO-USB (at 0 4.318) (layer F.Fab) hide
@@ -27,4 +27,5 @@
   (pad 7 thru_hole circle (at 2.425 -1.525) (size 1.2 1.2) (drill 0.7) (layers *.Cu *.Mask F.Paste))
   (pad 8 thru_hole circle (at -3.625 1.125) (size 1.7 1.7) (drill oval 1.1) (layers *.Cu *.Mask F.Paste))
   (pad 9 thru_hole circle (at 3.625 1.125) (size 1.7 1.7) (drill oval 1.1) (layers *.Cu *.Mask F.Paste))
+  (pad 10 thru_hole circle (at 0 1.125) (size 1.7 1.7) (drill oval 1.1) (layers *.Cu *.Mask F.Paste))
 )

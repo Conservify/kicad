@@ -38,6 +38,11 @@ class FieldsTablePart:
         self.data = data
         self.key = " ".join([data[v] for v in key_fields])
 
+    def with_footprint(self, footprint):
+        new_data = self.data.copy()
+        new_data['footprint'] = footprint
+        return FieldsTablePart(new_data)
+
 class FieldsTable:
     def __init__(self, original):
         self.keyed = {}
@@ -54,6 +59,14 @@ class SchematicPart:
 
     def __str__(self):
         return "SchematicPart<%s>" % (self.key,)
+
+    def with_footprint(self, fp):
+        new_data = self.data.copy()
+        new_data['footprint'] = fp
+        return SchematicPart(self.ref, new_data)
+
+    def footprint(self):
+        return self.data['footprint']
 
     def value(self, key):
         return self.data.get(pretty_field_names[key], '')
@@ -115,7 +128,7 @@ def update_part_fields(source_part, schematic_part):
             schematic_part.data[schematic_name] = " "
     return True
 
-def update_schematic_fields(working, filename, source):
+def update_schematic_fields(working, filename, source, unauthorized):
     table = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
 
     errors = False
@@ -124,7 +137,8 @@ def update_schematic_fields(working, filename, source):
         for schematic_part in schematic_parts:
             source_part = source.keyed.get(schematic_part.key)
             if source_part is None:
-                logger.log(logging.ERROR, "Missing %s: %s" % (filename, schematic_part))
+                logger.log(logging.ERROR, "No authority: %s: %s" % (os.path.basename(filename), schematic_part))
+                unauthorized.add(schematic_part)
                 errors = True
                 continue
             modified = update_part_fields(source_part, schematic_part) or modified
@@ -153,6 +167,32 @@ def remove_schematic_fields(working, filename):
         kifield.insert_part_fields_into_sch(table.original, filename, True, False)
 
     return True
+
+class UnauthorizedParts:
+    def __init__(self):
+        self.parts = []
+
+    def add(self, part):
+        self.parts.append(part)
+
+    def alternative_keys(self, part):
+        fp = part.footprint()
+        fp_parts = fp.split(":")
+        possible = part.with_footprint('RocketScreamKicadLibrary:' + fp_parts[1])
+        return [ possible.key ]
+
+    def resolve(self, source):
+        new_rows = []
+        for part in self.parts:
+            keys = self.alternative_keys(part)
+            for key in keys:
+                source_part = source.keyed.get(key)
+                if source_part is not None:
+                    new_rows.append(source_part.with_footprint(part.footprint()))
+                    logger.log(logging.INFO, "Found: %s" % (key))
+        for new_part in new_rows:
+            source.keyed[new_part.key] = new_part
+        return new_rows
 
 class BomGenerator:
     def __init__(self, schematic):
@@ -214,25 +254,29 @@ def read_csv(filename):
             rows.append(row)
     return rows
 
-def read_xlsx(filename):
-    wb = pyxl.load_workbook(filename)
-    ws = wb.active
-    rows = []
-    header = None
-    for number, row in enumerate(ws.rows):
-        row = [cell.value for cell in row]
-        if header is None:
-            header = row
-            continue
+class ExcelFile:
+    def read(self, filename):
+        wb = pyxl.load_workbook(filename)
+        ws = wb.active
+        rows = []
+        header = None
+        for number, row in enumerate(ws.rows):
+            row = [cell.value for cell in row]
+            if header is None:
+                header = row
+                continue
 
-        keyed = {}
-        for i, value in enumerate(row):
-            if header[i] is not None:
-                keyed[header[i]] = value
+            keyed = {}
+            for i, value in enumerate(row):
+                if header[i] is not None:
+                    keyed[header[i]] = value
 
-        rows.append(keyed)
+            rows.append(keyed)
 
-    return rows
+        self.rows = rows
+        self.header = header
+
+        return rows
 
 def update_xlsx_fields(filename, source):
     wb = pyxl.load_workbook(filename)
@@ -264,19 +308,16 @@ def update_xlsx_fields(filename, source):
     for part in source.keyed.values():
         if part.key not in seen:
             pprint.pprint([ 'Adding to XLSX: ', bottom, part.key ])
-            ws.cell(row = bottom, column = 2).value = part.data['footprint']
-            ws.cell(row = bottom, column = 3).value = part.data['value']
-            ws.cell(row = bottom, column = 4).value = part.data['mfn']
-            ws.cell(row = bottom, column = 5).value = part.data['mfp']
-            ws.cell(row = bottom, column = 6).value = part.data['spn1']
-            ws.cell(row = bottom, column = 7).value = part.data['supplier1']
+            for index, name in enumerate(header):
+                ws.cell(row = bottom, column = index + 1).value = part.data[name]
             bottom += 1
 
-    wb.save("updated-" + filename)
+    updated_fn = os.path.join(os.path.dirname(filename), "updated-" + os.path.basename(filename))
+    wb.save(updated_fn)
 
 def configure_logging():
     logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s')
-    if False: logging.getLogger('kifield').setLevel(logging.DEBUG - 0) 
+    if False: logging.getLogger('kifield').setLevel(logging.DEBUG - 0)
     logger.setLevel(logging.DEBUG)
 
 def main():
@@ -293,9 +334,10 @@ def main():
 
     errors = False
 
-    source_fields = FieldsTable(read_xlsx("authority.xlsx"))
-
-    # update_xlsx_fields("authority.xlsx", source_fields)
+    authority = ExcelFile()
+    authority_fn = os.path.abspath("authority.xlsx")
+    source_fields = FieldsTable(authority.read(authority_fn))
+    unauthorized = UnauthorizedParts()
 
     if args.remove:
         for child_filename in args.files:
@@ -312,7 +354,10 @@ def main():
             os.chdir(os.path.dirname(child_filename))
 
             logger.log(logging.INFO, "Updating fields %s" % (child_filename))
-            errors = not update_schematic_fields(working, child_filename, source_fields) or errors
+            errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
+
+        rows = unauthorized.resolve(source_fields)
+        update_xlsx_fields(authority_fn, source_fields)
 
         if errors:
             return

@@ -1,0 +1,9 @@
+(module PCB-LABEL-10x5 (layer F.Cu) (tedit 5B5F86C4)
+  (fp_text reference REF** (at 0 0.85) (layer F.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value PCB-LABEL-10x5 (at 0 -0.5) (layer F.Fab)
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_poly (pts (xy -10 -5) (xy 10 -5) (xy 10 0) (xy -10 0)) (layer F.SilkS) (width 0.15))
+)

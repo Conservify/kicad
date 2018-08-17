@@ -77,6 +77,11 @@ class SchematicPart:
                 self.data[name] = ""
         return True
 
+    def to_fields_part(self):
+        new_data = self.data.copy()
+        new_data['source'] = 'ANY'
+        return FieldsTablePart(new_data)
+
 class PartGroup:
     def __init__(self, key, parts):
         self.key = key
@@ -185,11 +190,15 @@ class UnauthorizedParts:
         new_rows = []
         for part in self.parts:
             keys = self.alternative_keys(part)
+            missing = True
             for key in keys:
                 source_part = source.keyed.get(key)
                 if source_part is not None:
                     new_rows.append(source_part.with_footprint(part.footprint()))
                     logger.log(logging.INFO, "Found: %s" % (key))
+                    missing = False
+            if missing:
+                new_rows.append(part.to_fields_part())
         for new_part in new_rows:
             source.keyed[new_part.key] = new_part
         return new_rows
@@ -309,7 +318,10 @@ def update_xlsx_fields(filename, source):
         if part.key not in seen:
             pprint.pprint([ 'Adding to XLSX: ', bottom, part.key ])
             for index, name in enumerate(header):
-                ws.cell(row = bottom, column = index + 1).value = part.data[name]
+                value = ""
+                if name in part.data:
+                    value = part.data[name]
+                ws.cell(row = bottom, column = index + 1).value = value
             bottom += 1
 
     updated_fn = os.path.join(os.path.dirname(filename), "updated-" + os.path.basename(filename))

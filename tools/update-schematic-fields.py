@@ -30,13 +30,27 @@ pretty_field_names = {
     'critical': 'Critical',
     'package': 'Package',
     'footprint': 'footprint',
-    'value': 'value'
+    'value': 'value',
+    'price1': 'price1',
+    'price100': 'price100',
+    'price1000': 'price1000',
+    'price5000': 'price5000'
 }
 
 class FieldsTablePart:
     def __init__(self, data):
         self.data = data
         self.key = " ".join([data[v] for v in key_fields])
+
+    def first_value(self, keys):
+        for key in keys:
+            value = self.data.get(pretty_field_names[key], None)
+            if value:
+                return value
+        return ''
+
+    def value(self, key):
+        return self.data.get(pretty_field_names[key], '')
 
     def with_footprint(self, footprint):
         new_data = self.data.copy()
@@ -67,6 +81,13 @@ class SchematicPart:
 
     def footprint(self):
         return self.data['footprint']
+
+    def first_value(self, keys):
+        for key in keys:
+            value = self.data.get(pretty_field_names[key], None)
+            if value:
+                return value
+        return ''
 
     def value(self, key):
         return self.data.get(pretty_field_names[key], '')
@@ -152,7 +173,7 @@ def update_schematic_fields(working, filename, source, unauthorized):
         return False
 
     if modified:
-        kifield.insert_part_fields_into_sch(table.original, filename, True, False, False)
+        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
 
     return True
 
@@ -204,8 +225,9 @@ class UnauthorizedParts:
         return new_rows
 
 class BomGenerator:
-    def __init__(self, schematic):
+    def __init__(self, schematic, source_fields):
         self.schematic = schematic
+        self.source_fields = source_fields
 
     def generate(self, path):
         wb = pyxl.Workbook()
@@ -216,11 +238,12 @@ class BomGenerator:
     def individual(self, ws):
         ws.title = "bom"
 
-        headings = [ 'ref', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical' ]
+        headings = [ 'ref', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 
         for row, part in enumerate(self.schematic.sorted()):
+            source = self.source_fields.keyed[part.key]
             ws.cell(row=row + 2, column=1).value = part.ref
             ws.cell(row=row + 2, column=2).value = part.value('footprint')
             ws.cell(row=row + 2, column=3).value = part.value('value')
@@ -228,6 +251,10 @@ class BomGenerator:
             ws.cell(row=row + 2, column=5).value = part.value('mfp')
             ws.cell(row=row + 2, column=6).value = part.value('source')
             ws.cell(row=row + 2, column=7).value = part.value('critical')
+            ws.cell(row=row + 2, column=8).value = source.first_value([ 'price1' ])
+            ws.cell(row=row + 2, column=9).value = source.first_value([ 'price100', 'price1' ])
+            ws.cell(row=row + 2, column=10).value = source.first_value([ 'price1000', 'price100', 'price1' ])
+            ws.cell(row=row + 2, column=11).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
     def grouped(self, ws):
         ws.title = "grouped"
@@ -237,6 +264,7 @@ class BomGenerator:
             ws.cell(row=1, column=c + 1).value = name
 
         for row, group in enumerate(self.schematic.grouped()):
+            source = self.source_fields.keyed[group.key]
             ws.cell(row=row + 2, column=1).value = group.refs()
             ws.cell(row=row + 2, column=2).value = group.values('footprint')
             ws.cell(row=row + 2, column=3).value = group.values('value')
@@ -245,12 +273,16 @@ class BomGenerator:
             ws.cell(row=row + 2, column=6).value = group.values('source')
             ws.cell(row=row + 2, column=7).value = group.values('critical')
             ws.cell(row=row + 2, column=8).value = group.size()
+            ws.cell(row=row + 2, column=9).value = source.first_value([ 'price1' ])
+            ws.cell(row=row + 2, column=10).value = source.first_value([ 'price100', 'price1' ])
+            ws.cell(row=row + 2, column=11).value = source.first_value([ 'price1000', 'price100', 'price1' ])
+            ws.cell(row=row + 2, column=12).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
-def create_schematic_bom(working, filename):
+def create_schematic_bom(working, filename, source_fields):
     name = os.path.basename(filename)
     schematic = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
 
-    generator = BomGenerator(schematic)
+    generator = BomGenerator(schematic, source_fields)
     generator.generate(os.path.join(working, name + ".xlsx"))
 
     return True
@@ -379,7 +411,7 @@ def main():
             os.chdir(os.path.dirname(child_filename))
 
             logger.log(logging.INFO, "Export BOM %s" % (child_filename))
-            errors = not create_schematic_bom(working, child_filename) or errors
+            errors = not create_schematic_bom(working, child_filename, source_fields) or errors
 
         if errors:
             return

@@ -117,7 +117,7 @@ class PartGroup:
 
     def values(self, key):
         values = [part.value(key) for part in self.parts]
-        uniq = set(values)
+        uniq = set([x for x in values if len(x) > 0])
         return ", ".join(uniq)
 
 class SchematicTable:
@@ -135,15 +135,17 @@ class SchematicTable:
         values.sort(key=lambda p: p.key)
         return values
 
+    def merge(self, table, multiplier):
+        self.all += table.all
+        for key, parts in table.keyed.iteritems():
+            self.keyed[key] = self.keyed.get(key, []) + (parts * multiplier)
+
     def grouped(self):
         rows = []
         for key, parts in self.keyed.iteritems():
             rows.append(PartGroup(key, parts))
         rows.sort(key=lambda pg: pg.key)
         return rows
-
-    def update_fields(self, source):
-        pass
 
 def update_part_fields(source_part, schematic_part):
     for name in fields:
@@ -278,9 +280,10 @@ class BomGenerator:
             ws.cell(row=row + 2, column=11).value = source.first_value([ 'price1000', 'price100', 'price1' ])
             ws.cell(row=row + 2, column=12).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
-def create_schematic_bom(working, filename, source_fields):
+def create_schematic_bom(working, filename, source_fields, combined, multiplier):
     name = os.path.basename(filename)
     schematic = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
+    combined.merge(schematic, multiplier)
 
     generator = BomGenerator(schematic, source_fields)
     generator.generate(os.path.join(working, name + ".xlsx"))
@@ -371,7 +374,7 @@ def main():
     parser.add_argument('--remove', help='', action="store_true")
     parser.add_argument('--update', help='', action="store_true")
     parser.add_argument('--bom', help='', action="store_true")
-    parser.add_argument('files', nargs='*')
+    parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()
     working = os.getcwd()
@@ -384,21 +387,23 @@ def main():
     unauthorized = UnauthorizedParts()
 
     if args.remove:
-        for child_filename in args.files:
-            os.chdir(os.path.dirname(child_filename))
+        for child_filename in args.args:
+            if os.path.isfile(child_filename):
+                os.chdir(os.path.dirname(child_filename))
 
-            logger.log(logging.INFO, "Removing fields %s" % (child_filename))
-            errors = not remove_schematic_fields(working, child_filename) or errors
+                logger.log(logging.INFO, "Removing fields %s" % (child_filename))
+                errors = not remove_schematic_fields(working, child_filename) or errors
 
         if errors:
             return
 
     if args.update:
-        for child_filename in args.files:
-            os.chdir(os.path.dirname(child_filename))
+        for child_filename in args.args:
+            if os.path.isfile(child_filename):
+                os.chdir(os.path.dirname(child_filename))
 
-            logger.log(logging.INFO, "Updating fields %s" % (child_filename))
-            errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
+                logger.log(logging.INFO, "Updating fields %s" % (child_filename))
+                errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
 
         rows = unauthorized.resolve(source_fields)
         update_xlsx_fields(authority_fn, source_fields)
@@ -407,14 +412,24 @@ def main():
             return
 
     if args.bom:
-        for child_filename in args.files:
-            os.chdir(os.path.dirname(child_filename))
+        combined = SchematicTable({ })
+        multiplier = 1
+        for arg in args.args:
+            if os.path.isfile(arg):
+                child_filename = arg
+                os.chdir(os.path.dirname(child_filename))
 
-            logger.log(logging.INFO, "Export BOM %s" % (child_filename))
-            errors = not create_schematic_bom(working, child_filename, source_fields) or errors
+                logger.log(logging.INFO, "Export BOM %s (%d)" % (child_filename, multiplier))
+                errors = not create_schematic_bom(working, child_filename, source_fields, combined, multiplier) or errors
+                multiplier = 1
+            else:
+                multiplier = int(arg)
 
         if errors:
             return
+
+        generator = BomGenerator(combined, source_fields)
+        generator.generate(os.path.join(working, "combined.xlsx"))
 
 if __name__ == "__main__":
     main()

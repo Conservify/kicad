@@ -454,6 +454,10 @@ def main():
                 child_filename = arg
                 os.chdir(os.path.dirname(child_filename))
 
+                if not args.update:
+                    logger.log(logging.INFO, "Updating fields %s" % (child_filename))
+                    errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
+
                 logger.log(logging.INFO, "Export BOM %s (%d)" % (child_filename, multiplier))
                 errors = not create_schematic_bom(working, child_filename, source_fields, combined, multiplier) or errors
                 multiplier = 1

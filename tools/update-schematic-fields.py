@@ -264,7 +264,7 @@ class BomGenerator:
     def grouped(self, ws):
         ws.title = "grouped"
 
-        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity' ]
+        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 

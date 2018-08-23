@@ -367,7 +367,7 @@ def update_schematic_fields(working, filename, source, unauthorized):
         return False
 
     if modified:
-        kifield.insert_part_fields_into_sch(table.original, filename, True, False, False)
+        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
 
     return True
 

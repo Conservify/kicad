@@ -1,14 +1,14 @@
 #/bin/bash
 
 fix() {
-    ./update-schematic-fields.py --from-value "$1" --to-value "$2" \
-                                 /home/jlewallen/fieldkit/core/hardware/fk-core.sch \
-                                 /home/jlewallen/fieldkit/naturalist/hardware/main-board/fk-naturalist.sch \
-                                 /home/jlewallen/fieldkit/atlas/hardware/fk-atlas.sch \
-                                 /home/jlewallen/fieldkit/weather/hardware/module-board/fk-weather.sch \
-                                 /home/jlewallen/fieldkit/weather/hardware/sensor-board/fk-weather-sensors.sch \
-                                 /home/jlewallen/fieldkit/naturalist/hardware/sensor-board/fk-naturalist-sensors.sch \
-                                 /home/jlewallen/fieldkit/sonar/hardware/fk-sonar.sch
+    ./kicad-tool.py --from-value "$1" --to-value "$2" \
+         /home/jlewallen/fieldkit/core/hardware/fk-core.sch \
+         /home/jlewallen/fieldkit/naturalist/hardware/main-board/fk-naturalist.sch \
+         /home/jlewallen/fieldkit/atlas/hardware/fk-atlas.sch \
+         /home/jlewallen/fieldkit/weather/hardware/module-board/fk-weather.sch \
+         /home/jlewallen/fieldkit/weather/hardware/sensor-board/fk-weather-sensors.sch \
+         /home/jlewallen/fieldkit/naturalist/hardware/sensor-board/fk-naturalist-sensors.sch \
+         /home/jlewallen/fieldkit/sonar/hardware/fk-sonar.sch
 }
 
 

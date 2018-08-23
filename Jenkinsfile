@@ -33,7 +33,7 @@ timestamps {
                 withPythonEnv('python') {
                     pysh "rm -rf kifield-0.1.8 && tar xf kifield*.tar.gz && (cd kifield-0.1.8 && python setup.py install)"
 
-                    pysh "python update-schematic-fields.py --bom ../fk-core.sch ../fk-naturalist.sch ../fk-naturalist-sensors.sch ../fk-sonar.sch ../fk-atlas.sch ../fk-weather.sch ../fk-weather-sensors.sch"
+                    pysh "python kicad-tool.py --bom ../fk-core.sch ../fk-naturalist.sch ../fk-naturalist-sensors.sch ../fk-sonar.sch ../fk-atlas.sch ../fk-weather.sch ../fk-weather-sensors.sch"
 
                     pysh "ls -alh"
                 }

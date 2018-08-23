@@ -214,6 +214,7 @@ class ExcelBom:
         self.overview.cell(row=1, column=1).value = 'bom'
         self.overview.cell(row=1, column=2).value = 'quantity'
         self.schematics = []
+        self.combined_ws = self.wb.create_sheet("combined")
 
     def add_schematic_overview(self, filename):
         overview_row = len(self.schematics) + 2
@@ -236,7 +237,11 @@ class ExcelBom:
     def individual(self, name, schematic, source_fields):
         logger.log(logging.INFO, "Generating '%s' WS" % (name))
 
-        ws = self.wb.create_sheet(name)
+        ws = None
+        try:
+            ws = self.wb[name]
+        except KeyError:
+            ws = self.wb.create_sheet(name)
 
         headings = [ 'ref', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
@@ -256,10 +261,16 @@ class ExcelBom:
             ws.cell(row=row + 2, column=10).value = source.first_value([ 'price1000', 'price100', 'price1' ])
             ws.cell(row=row + 2, column=11).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
+        return ws
+
     def grouped(self, name, schematic, source_fields):
         logger.log(logging.INFO, "Generating '%s' WS" % (name))
 
-        ws = self.wb.create_sheet(name)
+        ws = None
+        try:
+            ws = self.wb[name]
+        except KeyError:
+            ws = self.wb.create_sheet(name)
 
         headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
@@ -280,8 +291,10 @@ class ExcelBom:
             ws.cell(row=row + 2, column=11).value = source.first_value([ 'price1000', 'price100', 'price1' ])
             ws.cell(row=row + 2, column=12).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
+        return ws
+
     def add_combined(self, schematic, source_fields):
-        self.grouped("combined", schematic, source_fields)
+        ws = self.grouped("combined", schematic, source_fields)
 
     def save(self, filename):
         logger.log(logging.INFO, "Saving %s" % (filename))

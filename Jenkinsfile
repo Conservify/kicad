@@ -42,7 +42,7 @@ timestamps {
 
         stage ("archive") {
             dir ("tools") {
-                archiveArtifacts "fk*.xlsx, combined.xlsx, authority.xlsx"
+                archiveArtifacts "super.xlsx, authority.xlsx"
             }
         }
     }

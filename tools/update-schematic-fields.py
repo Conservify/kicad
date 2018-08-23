@@ -404,6 +404,13 @@ def main():
     args = parser.parse_args()
     working = os.getcwd()
 
+    processed_args = []
+    for arg in args.args:
+        if os.path.isfile(arg):
+            processed_args.append(os.path.abspath(arg))
+        else:
+            processed_args.append(arg)
+
     errors = False
 
     logger.log(logging.INFO, "Opening %s" % ("authority.xlsx"))
@@ -414,7 +421,7 @@ def main():
     unauthorized = UnauthorizedParts()
 
     if args.remove:
-        for child_filename in args.args:
+        for child_filename in processed_args:
             if os.path.isfile(child_filename):
                 os.chdir(os.path.dirname(child_filename))
 
@@ -425,7 +432,7 @@ def main():
             return
 
     if args.update:
-        for child_filename in args.args:
+        for child_filename in processed_args:
             if os.path.isfile(child_filename):
                 os.chdir(os.path.dirname(child_filename))
 
@@ -440,7 +447,7 @@ def main():
 
     if args.from_value and args.to_value:
         logger.log(logging.INFO, "Changing value '%s' to '%s'" % (args.from_value, args.to_value))
-        for child_filename in args.args:
+        for child_filename in processed_args:
             logger.log(logging.INFO, "Processing %s" % (child_filename))
             os.chdir(os.path.dirname(child_filename))
 
@@ -449,7 +456,7 @@ def main():
     if args.bom:
         combined = SchematicTable({ })
         multiplier = 1
-        for arg in args.args:
+        for arg in processed_args:
             if os.path.isfile(arg):
                 child_filename = arg
                 os.chdir(os.path.dirname(child_filename))

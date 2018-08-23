@@ -82,6 +82,9 @@ class SchematicPart:
     def footprint(self):
         return self.data['footprint']
 
+    def change(self, key, value):
+        self.data[key] = value
+
     def first_value(self, keys):
         for key in keys:
             value = self.data.get(pretty_field_names[key], None)
@@ -212,7 +215,7 @@ class BomGenerator:
     def grouped(self, ws):
         ws.title = "grouped"
 
-        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity' ]
+        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 
@@ -254,6 +257,44 @@ class ExcelFile:
         self.header = header
 
         return rows
+
+def create_schematic_bom(working, filename, source_fields, combined, multiplier):
+    name = os.path.basename(filename)
+    schematic = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
+    combined.merge(schematic, multiplier)
+
+    generator = BomGenerator(schematic, source_fields)
+    generator.generate(os.path.join(working, name + ".xlsx"))
+
+    return True
+
+def change_value(working, filename, from_value, to_value):
+    table = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
+
+    errors = False
+    modified = False
+    for key, schematic_parts in table.keyed.iteritems():
+        for schematic_part in schematic_parts:
+            if schematic_part.value('value') == from_value:
+                logger.log(logging.INFO, "Changing: %s: %s" % (os.path.basename(filename), schematic_part))
+                schematic_part.change('value', to_value)
+                modified = True
+
+    if errors:
+        return False
+
+    if modified:
+        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
+
+    return True
+
+def read_csv(filename):
+    rows = []
+    with open(filename) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            rows.append(row)
+    return rows
 
 def update_part_fields(source_part, schematic_part):
     for name in fields:
@@ -374,12 +415,23 @@ def main():
     parser.add_argument('--remove', help='', action="store_true")
     parser.add_argument('--update', help='', action="store_true")
     parser.add_argument('--bom', help='', action="store_true")
+    parser.add_argument('--from-value', help='', action="store")
+    parser.add_argument('--to-value', help='', action="store")
     parser.add_argument('args', nargs='*')
 
     args = parser.parse_args()
     working = os.getcwd()
 
+    processed_args = []
+    for arg in args.args:
+        if os.path.isfile(arg):
+            processed_args.append(os.path.abspath(arg))
+        else:
+            processed_args.append(arg)
+
     errors = False
+
+    logger.log(logging.INFO, "Opening %s" % ("authority.xlsx"))
 
     authority = ExcelFile()
     authority_fn = os.path.abspath("authority.xlsx")
@@ -387,7 +439,7 @@ def main():
     unauthorized = UnauthorizedParts()
 
     if args.remove:
-        for child_filename in args.args:
+        for child_filename in processed_args:
             if os.path.isfile(child_filename):
                 os.chdir(os.path.dirname(child_filename))
 
@@ -398,7 +450,7 @@ def main():
             return
 
     if args.update:
-        for child_filename in args.args:
+        for child_filename in processed_args:
             if os.path.isfile(child_filename):
                 os.chdir(os.path.dirname(child_filename))
 
@@ -411,13 +463,25 @@ def main():
         if errors:
             return
 
+    if args.from_value and args.to_value:
+        logger.log(logging.INFO, "Changing value '%s' to '%s'" % (args.from_value, args.to_value))
+        for child_filename in processed_args:
+            logger.log(logging.INFO, "Processing %s" % (child_filename))
+            os.chdir(os.path.dirname(child_filename))
+
+            errors = not change_value(working, child_filename, args.from_value, args.to_value) or errors
+
     if args.bom:
         combined = SchematicTable({ })
         multiplier = 1
-        for arg in args.args:
+        for arg in processed_args:
             if os.path.isfile(arg):
                 child_filename = arg
                 os.chdir(os.path.dirname(child_filename))
+
+                if not args.update:
+                    logger.log(logging.INFO, "Updating fields %s" % (child_filename))
+                    errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
 
                 logger.log(logging.INFO, "Export BOM %s (%d)" % (child_filename, multiplier))
                 errors = not create_schematic_bom(working, child_filename, source_fields, combined, multiplier) or errors

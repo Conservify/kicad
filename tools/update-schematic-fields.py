@@ -147,55 +147,6 @@ class SchematicTable:
         rows.sort(key=lambda pg: pg.key)
         return rows
 
-def update_part_fields(source_part, schematic_part):
-    for name in fields:
-        schematic_name = pretty_field_names[name]
-        if source_part.data.get(name):
-            schematic_part.data[schematic_name] = source_part.data[name]
-        else:
-            schematic_part.data[schematic_name] = " "
-    return True
-
-def update_schematic_fields(working, filename, source, unauthorized):
-    table = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
-
-    errors = False
-    modified = False
-    for key, schematic_parts in table.keyed.iteritems():
-        for schematic_part in schematic_parts:
-            source_part = source.keyed.get(schematic_part.key)
-            if source_part is None:
-                logger.log(logging.ERROR, "No authority: %s: %s" % (os.path.basename(filename), schematic_part))
-                unauthorized.add(schematic_part)
-                errors = True
-                continue
-            modified = update_part_fields(source_part, schematic_part) or modified
-
-    if errors:
-        return False
-
-    if modified:
-        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
-
-    return True
-
-def remove_schematic_fields(working, filename):
-    table = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
-
-    errors = False
-    modified = False
-    for key, schematic_parts in table.keyed.iteritems():
-        for schematic_part in schematic_parts:
-            modified = schematic_part.remove_fields() or modified
-
-    if errors:
-        return False
-
-    if modified:
-        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
-
-    return True
-
 class UnauthorizedParts:
     def __init__(self):
         self.parts = []
@@ -280,24 +231,6 @@ class BomGenerator:
             ws.cell(row=row + 2, column=11).value = source.first_value([ 'price1000', 'price100', 'price1' ])
             ws.cell(row=row + 2, column=12).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
-def create_schematic_bom(working, filename, source_fields, combined, multiplier):
-    name = os.path.basename(filename)
-    schematic = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
-    combined.merge(schematic, multiplier)
-
-    generator = BomGenerator(schematic, source_fields)
-    generator.generate(os.path.join(working, name + ".xlsx"))
-
-    return True
-
-def read_csv(filename):
-    rows = []
-    with open(filename) as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            rows.append(row)
-    return rows
-
 class ExcelFile:
     def read(self, filename):
         wb = pyxl.load_workbook(filename)
@@ -321,6 +254,73 @@ class ExcelFile:
         self.header = header
 
         return rows
+
+def update_part_fields(source_part, schematic_part):
+    for name in fields:
+        schematic_name = pretty_field_names[name]
+        if source_part.data.get(name):
+            schematic_part.data[schematic_name] = source_part.data[name]
+        else:
+            schematic_part.data[schematic_name] = " "
+    return True
+
+def update_schematic_fields(working, filename, source, unauthorized):
+    table = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
+
+    errors = False
+    modified = False
+    for key, schematic_parts in table.keyed.iteritems():
+        for schematic_part in schematic_parts:
+            source_part = source.keyed.get(schematic_part.key)
+            if source_part is None:
+                logger.log(logging.ERROR, "No authority: %s: %s" % (os.path.basename(filename), schematic_part))
+                unauthorized.add(schematic_part)
+                errors = True
+                continue
+            modified = update_part_fields(source_part, schematic_part) or modified
+
+    if errors:
+        return False
+
+    if modified:
+        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
+
+    return True
+
+def remove_schematic_fields(working, filename):
+    table = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
+
+    errors = False
+    modified = False
+    for key, schematic_parts in table.keyed.iteritems():
+        for schematic_part in schematic_parts:
+            modified = schematic_part.remove_fields() or modified
+
+    if errors:
+        return False
+
+    if modified:
+        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
+
+    return True
+
+def create_schematic_bom(working, filename, source_fields, combined, multiplier):
+    name = os.path.basename(filename)
+    schematic = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
+    combined.merge(schematic, multiplier)
+
+    generator = BomGenerator(schematic, source_fields)
+    generator.generate(os.path.join(working, name + ".xlsx"))
+
+    return True
+
+def read_csv(filename):
+    rows = []
+    with open(filename) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            rows.append(row)
+    return rows
 
 def update_xlsx_fields(filename, source):
     wb = pyxl.load_workbook(filename)

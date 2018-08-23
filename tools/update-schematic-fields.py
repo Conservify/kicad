@@ -292,20 +292,22 @@ class ExcelBom:
             ws.cell(row=row + 2, column=6).value = group.values('source')
             ws.cell(row=row + 2, column=7).value = group.values('critical')
 
-            multiplier_cell = ws.cell(row=row + 2, column=8)
+            quantity_cell = ws.cell(row=row + 2, column=8)
             price_cell = ws.cell(row=row + 2, column=9)
             price1_cell = ws.cell(row=row + 2, column=10)
             price100_cell = ws.cell(row=row + 2, column=11)
             price1000_cell = ws.cell(row=row + 2, column=12)
             price5000_cell = ws.cell(row=row + 2, column=13)
 
-            multiplier_cell.value = group.size()
+            quantity_cell.value = group.size()
             price1_cell.value = source.first_value([ 'price1' ])
             price100_cell.value = source.first_value([ 'price100', 'price1' ])
             price1000_cell.value = source.first_value([ 'price1000', 'price100', 'price1' ])
             price5000_cell.value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
-            price_cell.value = "=" + price1_cell.coordinate + "*" + multiplier_cell.coordinate
+            qcs = quantity_cell.coordinate
+            formula = "=IF(%s < 100, %s, IF(%s < 1000, %s, IF(%s < 5000, %s, %s))) * %s" % (qcs, price1_cell.coordinate, qcs, price100_cell.coordinate, qcs, price1000_cell.coordinate, price5000_cell.coordinate, qcs)
+            price_cell.value = formula
 
         first_row = 2
         last_row = len(grouped) + 2 - 1

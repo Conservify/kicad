@@ -331,14 +331,6 @@ def change_value(working, filename, from_value, to_value):
 
     return True
 
-def read_csv(filename):
-    rows = []
-    with open(filename) as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            rows.append(row)
-    return rows
-
 def update_part_fields(source_part, schematic_part):
     for name in fields:
         schematic_name = pretty_field_names[name]

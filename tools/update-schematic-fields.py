@@ -216,6 +216,10 @@ class ExcelBom:
         self.schematics = []
         self.combined_ws = self.wb.create_sheet("combined")
 
+    def prepare(self, files):
+        for f in files: self.wb.create_sheet(os.path.basename(f)+ " grouped")
+        for f in files: self.wb.create_sheet(os.path.basename(f)+ " itemized")
+
     def add_schematic_overview(self, filename):
         overview_row = len(self.schematics) + 2
         sub_bom = ExcelSubBom(os.path.basename(filename), "overview!" + 'B' + str(overview_row))
@@ -464,8 +468,6 @@ def main():
     for arg in args.args:
         if os.path.isfile(arg):
             processed_args.append(os.path.abspath(arg))
-        else:
-            processed_args.append(arg)
 
     errors = False
 
@@ -510,22 +512,24 @@ def main():
             errors = not change_value(working, child_filename, args.from_value, args.to_value) or errors
 
     if args.bom:
-        super_bom = ExcelBom()
         combined = SchematicTable({ })
+
+        super_bom = ExcelBom()
+        super_bom.prepare(processed_args)
+
         for arg in processed_args:
-            if os.path.isfile(arg):
-                child_filename = arg
-                os.chdir(os.path.dirname(child_filename))
+            child_filename = arg
+            os.chdir(os.path.dirname(child_filename))
 
-                logger.log(logging.INFO, "Processing %s" % (child_filename))
+            logger.log(logging.INFO, "Processing %s" % (child_filename))
 
-                if not args.update:
-                    logger.log(logging.INFO, "Updating fields %s" % (child_filename))
-                    errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
+            if not args.update:
+                logger.log(logging.INFO, "Updating fields %s" % (child_filename))
+                errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
 
-                schematic = SchematicTable(kifield.extract_part_fields_from_sch(child_filename, recurse=True))
-                sub_bom = super_bom.add_schematic(child_filename, schematic, source_fields)
-                combined.merge(schematic, sub_bom.quantity_cell)
+            schematic = SchematicTable(kifield.extract_part_fields_from_sch(child_filename, recurse=True))
+            sub_bom = super_bom.add_schematic(child_filename, schematic, source_fields)
+            combined.merge(schematic, sub_bom.quantity_cell)
 
         if errors:
             return

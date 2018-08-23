@@ -222,7 +222,8 @@ class ExcelBom:
 
     def add_schematic_overview(self, filename):
         overview_row = len(self.schematics) + 2
-        sub_bom = ExcelSubBom(os.path.basename(filename), "overview!" + 'B' + str(overview_row))
+        multiplier_cell = self.overview.cell(row=overview_row, column=2).coordinate
+        sub_bom = ExcelSubBom(os.path.basename(filename), "overview!" + multiplier_cell)
         self.overview.cell(row=overview_row, column=1).value = sub_bom.name
         self.overview.cell(row=overview_row, column=2).value = sub_bom.quantity
         self.schematics.append(sub_bom)
@@ -276,11 +277,12 @@ class ExcelBom:
         except KeyError:
             ws = self.wb.create_sheet(name)
 
-        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity', 'price1', 'price100', 'price1000', 'price5000' ]
+        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity', 'price', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 
-        for row, group in enumerate(schematic.grouped()):
+        grouped = schematic.grouped()
+        for row, group in enumerate(grouped):
             source = source_fields.keyed[group.key]
             ws.cell(row=row + 2, column=1).value = group.refs()
             ws.cell(row=row + 2, column=2).value = group.values('footprint')
@@ -289,11 +291,28 @@ class ExcelBom:
             ws.cell(row=row + 2, column=5).value = group.values('mfp')
             ws.cell(row=row + 2, column=6).value = group.values('source')
             ws.cell(row=row + 2, column=7).value = group.values('critical')
-            ws.cell(row=row + 2, column=8).value = group.size()
-            ws.cell(row=row + 2, column=9).value = source.first_value([ 'price1' ])
-            ws.cell(row=row + 2, column=10).value = source.first_value([ 'price100', 'price1' ])
-            ws.cell(row=row + 2, column=11).value = source.first_value([ 'price1000', 'price100', 'price1' ])
-            ws.cell(row=row + 2, column=12).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
+
+            multiplier_cell = ws.cell(row=row + 2, column=8)
+            price_cell = ws.cell(row=row + 2, column=9)
+            price1_cell = ws.cell(row=row + 2, column=10)
+            price100_cell = ws.cell(row=row + 2, column=11)
+            price1000_cell = ws.cell(row=row + 2, column=12)
+            price5000_cell = ws.cell(row=row + 2, column=13)
+
+            multiplier_cell.value = group.size()
+            price1_cell.value = source.first_value([ 'price1' ])
+            price100_cell.value = source.first_value([ 'price100', 'price1' ])
+            price1000_cell.value = source.first_value([ 'price1000', 'price100', 'price1' ])
+            price5000_cell.value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
+
+            price_cell.value = "=" + price1_cell.coordinate + "*" + multiplier_cell.coordinate
+
+        first_row = 2
+        last_row = len(grouped) + 2 - 1
+        column = pyxl.utils.get_column_letter(9)
+
+        total_cell = ws.cell(row=len(grouped) + 2, column=9)
+        total_cell.value = "=SUM(%s%s:%s%s)" % (column, first_row, column, last_row)
 
         return ws
 

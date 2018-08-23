@@ -107,12 +107,13 @@ class SchematicPart:
         return FieldsTablePart(new_data)
 
 class PartGroup:
-    def __init__(self, key, parts):
+    def __init__(self, key, multiplier, parts):
         self.key = key
+        self.multiplier = multiplier
         self.parts = parts
 
     def size(self):
-        return len(self.parts)
+        return "(" + str(len(self.parts)) + "*" + self.multiplier + ")"
 
     def refs(self):
         values = [part.ref for part in self.parts]
@@ -123,11 +124,30 @@ class PartGroup:
         uniq = set([x for x in values if len(x) > 0])
         return ", ".join(uniq)
 
+class PartGroups:
+    def __init__(self, key, groups):
+        self.key = key
+        self.groups = groups
+
+    def size(self):
+        values = [c.size() for c in self.groups]
+        return "=(" + (" + ".join(values)) + ")"
+
+    def refs(self):
+        values = [c.refs() for c in self.groups]
+        return ", ".join(values)
+
+    def values(self, key):
+        values = [c.values(key) for c in self.groups]
+        uniq = set([x for x in values if len(x) > 0])
+        return ", ".join(uniq)
+
 class SchematicTable:
     def __init__(self, original):
         self.original = original
         self.all = []
         self.keyed = {}
+        self.groups = None
         for ref, data in original.iteritems():
             part = SchematicPart(ref, data)
             self.keyed[part.key] = self.keyed.get(part.key, []) + [ part ]
@@ -139,14 +159,14 @@ class SchematicTable:
         return values
 
     def merge(self, table, multiplier):
-        self.all += table.all
+        if self.groups is None:
+            self.groups = {}
+
         for key, parts in table.keyed.iteritems():
-            self.keyed[key] = self.keyed.get(key, []) + (parts * multiplier)
+            self.groups[key] = self.groups.get(key, []) + [ PartGroup(key, multiplier, parts) ]
 
     def grouped(self):
-        rows = []
-        for key, parts in self.keyed.iteritems():
-            rows.append(PartGroup(key, parts))
+        rows = [PartGroups(g[0].key, g) for g in self.groups.values()]
         rows.sort(key=lambda pg: pg.key)
         return rows
 
@@ -180,26 +200,50 @@ class UnauthorizedParts:
             source.keyed[new_part.key] = new_part
         return new_rows
 
-class BomGenerator:
-    def __init__(self, schematic, source_fields):
-        self.schematic = schematic
-        self.source_fields = source_fields
+class ExcelSubBom:
+    def __init__(self, name, quantity_cell):
+        self.name = name
+        self.quantity = 1
+        self.quantity_cell = quantity_cell
 
-    def generate(self, path):
-        wb = pyxl.Workbook()
-        self.individual(wb.active)
-        self.grouped(wb.create_sheet("grouped"))
-        wb.save(path)
+class ExcelBom:
+    def __init__(self):
+        self.wb = pyxl.Workbook()
+        self.overview = self.wb.active
+        self.overview.title = "overview"
+        self.overview.cell(row=1, column=1).value = 'bom'
+        self.overview.cell(row=1, column=2).value = 'quantity'
+        self.schematics = []
 
-    def individual(self, ws):
-        ws.title = "bom"
+    def add_schematic_overview(self, filename):
+        overview_row = len(self.schematics) + 2
+        sub_bom = ExcelSubBom(os.path.basename(filename), "overview!" + 'B' + str(overview_row))
+        self.overview.cell(row=overview_row, column=1).value = sub_bom.name
+        self.overview.cell(row=overview_row, column=2).value = sub_bom.quantity
+        self.schematics.append(sub_bom)
+        return sub_bom
+
+    def add_schematic(self, filename, schematic, source_fields):
+        sub_bom = self.add_schematic_overview(filename)
+        self.individual(sub_bom.name + " itemized", schematic, source_fields)
+
+        grouped = SchematicTable({ })
+        grouped.merge(schematic, sub_bom.quantity_cell)
+        self.grouped(sub_bom.name + " grouped", grouped, source_fields)
+
+        return sub_bom
+
+    def individual(self, name, schematic, source_fields):
+        logger.log(logging.INFO, "Generating '%s' WS" % (name))
+
+        ws = self.wb.create_sheet(name)
 
         headings = [ 'ref', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 
-        for row, part in enumerate(self.schematic.sorted()):
-            source = self.source_fields.keyed[part.key]
+        for row, part in enumerate(schematic.sorted()):
+            source = source_fields.keyed[part.key]
             ws.cell(row=row + 2, column=1).value = part.ref
             ws.cell(row=row + 2, column=2).value = part.value('footprint')
             ws.cell(row=row + 2, column=3).value = part.value('value')
@@ -212,15 +256,17 @@ class BomGenerator:
             ws.cell(row=row + 2, column=10).value = source.first_value([ 'price1000', 'price100', 'price1' ])
             ws.cell(row=row + 2, column=11).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
-    def grouped(self, ws):
-        ws.title = "grouped"
+    def grouped(self, name, schematic, source_fields):
+        logger.log(logging.INFO, "Generating '%s' WS" % (name))
+
+        ws = self.wb.create_sheet(name)
 
         headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 
-        for row, group in enumerate(self.schematic.grouped()):
-            source = self.source_fields.keyed[group.key]
+        for row, group in enumerate(schematic.grouped()):
+            source = source_fields.keyed[group.key]
             ws.cell(row=row + 2, column=1).value = group.refs()
             ws.cell(row=row + 2, column=2).value = group.values('footprint')
             ws.cell(row=row + 2, column=3).value = group.values('value')
@@ -233,6 +279,13 @@ class BomGenerator:
             ws.cell(row=row + 2, column=10).value = source.first_value([ 'price100', 'price1' ])
             ws.cell(row=row + 2, column=11).value = source.first_value([ 'price1000', 'price100', 'price1' ])
             ws.cell(row=row + 2, column=12).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
+
+    def add_combined(self, schematic, source_fields):
+        self.grouped("combined", schematic, source_fields)
+
+    def save(self, filename):
+        logger.log(logging.INFO, "Saving %s" % (filename))
+        self.wb.save(filename)
 
 class ExcelFile:
     def read(self, filename):
@@ -257,16 +310,6 @@ class ExcelFile:
         self.header = header
 
         return rows
-
-def create_schematic_bom(working, filename, source_fields, combined, multiplier):
-    name = os.path.basename(filename)
-    schematic = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
-    combined.merge(schematic, multiplier)
-
-    generator = BomGenerator(schematic, source_fields)
-    generator.generate(os.path.join(working, name + ".xlsx"))
-
-    return True
 
 def change_value(working, filename, from_value, to_value):
     table = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
@@ -324,7 +367,7 @@ def update_schematic_fields(working, filename, source, unauthorized):
         return False
 
     if modified:
-        kifield.insert_part_fields_into_sch(table.original, filename, True, False)
+        kifield.insert_part_fields_into_sch(table.original, filename, True, False, False)
 
     return True
 
@@ -342,16 +385,6 @@ def remove_schematic_fields(working, filename):
 
     if modified:
         kifield.insert_part_fields_into_sch(table.original, filename, True, False)
-
-    return True
-
-def create_schematic_bom(working, filename, source_fields, combined, multiplier):
-    name = os.path.basename(filename)
-    schematic = SchematicTable(kifield.extract_part_fields_from_sch(filename, recurse=True))
-    combined.merge(schematic, multiplier)
-
-    generator = BomGenerator(schematic, source_fields)
-    generator.generate(os.path.join(working, name + ".xlsx"))
 
     return True
 
@@ -472,28 +505,28 @@ def main():
             errors = not change_value(working, child_filename, args.from_value, args.to_value) or errors
 
     if args.bom:
+        super_bom = ExcelBom()
         combined = SchematicTable({ })
-        multiplier = 1
         for arg in processed_args:
             if os.path.isfile(arg):
                 child_filename = arg
                 os.chdir(os.path.dirname(child_filename))
 
+                logger.log(logging.INFO, "Processing %s" % (child_filename))
+
                 if not args.update:
                     logger.log(logging.INFO, "Updating fields %s" % (child_filename))
                     errors = not update_schematic_fields(working, child_filename, source_fields, unauthorized) or errors
 
-                logger.log(logging.INFO, "Export BOM %s (%d)" % (child_filename, multiplier))
-                errors = not create_schematic_bom(working, child_filename, source_fields, combined, multiplier) or errors
-                multiplier = 1
-            else:
-                multiplier = int(arg)
+                schematic = SchematicTable(kifield.extract_part_fields_from_sch(child_filename, recurse=True))
+                sub_bom = super_bom.add_schematic(child_filename, schematic, source_fields)
+                combined.merge(schematic, sub_bom.quantity_cell)
 
         if errors:
             return
 
-        generator = BomGenerator(combined, source_fields)
-        generator.generate(os.path.join(working, "combined.xlsx"))
+        super_bom.add_combined(combined, source_fields)
+        super_bom.save(os.path.join(working, "super.xlsx"))
 
 if __name__ == "__main__":
     main()

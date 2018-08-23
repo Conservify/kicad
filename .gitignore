@@ -1,9 +1,3 @@
 .~lock*
 tools/updated-authority.xlsx
-tools/fk-naturalist.sch.xlsx
-tools/combined.xlsx
-tools/fk-atlas.sch.xlsx
-tools/fk-core.sch.xlsx
-tools/fk-sonar.sch.xlsx
-tools/fk-weather-sensors.sch.xlsx
-tools/fk-weather.sch.xlsx
+tools/super.xlsx

@@ -19,6 +19,7 @@ timestamps {
             sh "wget https://github.com/fieldkit/naturalist/raw/master/hardware/sensor-board/fk-naturalist-sensors.sch"
             sh "wget https://github.com/fieldkit/naturalist/raw/master/hardware/main-board/fk-naturalist.sch"
 
+            // NOTE: The isolated_atlas?.sch files are included from fk-atlas.sch and so we skip listing them below to avoid processing them twice.
             sh "wget https://github.com/fieldkit/atlas/raw/master/hardware/fk-atlas.sch"
             sh "wget https://github.com/fieldkit/atlas/raw/master/hardware/isolated_atlas0.sch"
             sh "wget https://github.com/fieldkit/atlas/raw/master/hardware/isolated_atlas1.sch"
@@ -41,7 +42,7 @@ timestamps {
 
         stage ("archive") {
             dir ("tools") {
-                archiveArtifacts "*.xlsx"
+                archiveArtifacts "fk*.xlsx, combined.xlsx, authority.xlsx"
             }
         }
     }

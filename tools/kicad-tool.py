@@ -28,6 +28,7 @@ pretty_field_names = {
     'notes': 'Notes',
     'subsystem': 'Subsystem',
     'critical': 'Critical',
+    'inventory': 'Inventory',
     'package': 'Package',
     'footprint': 'footprint',
     'value': 'value',
@@ -248,7 +249,7 @@ class ExcelBom:
         except KeyError:
             ws = self.wb.create_sheet(name)
 
-        headings = [ 'ref', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'price1', 'price100', 'price1000', 'price5000' ]
+        headings = [ 'ref', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'inventory', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 
@@ -261,10 +262,11 @@ class ExcelBom:
             ws.cell(row=row + 2, column=5).value = part.value('mfp')
             ws.cell(row=row + 2, column=6).value = part.value('source')
             ws.cell(row=row + 2, column=7).value = part.value('critical')
-            ws.cell(row=row + 2, column=8).value = source.first_value([ 'price1' ])
-            ws.cell(row=row + 2, column=9).value = source.first_value([ 'price100', 'price1' ])
-            ws.cell(row=row + 2, column=10).value = source.first_value([ 'price1000', 'price100', 'price1' ])
-            ws.cell(row=row + 2, column=11).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
+            ws.cell(row=row + 2, column=8).value = part.value('inventory')
+            ws.cell(row=row + 2, column=9).value = source.first_value([ 'price1' ])
+            ws.cell(row=row + 2, column=10).value = source.first_value([ 'price100', 'price1' ])
+            ws.cell(row=row + 2, column=11).value = source.first_value([ 'price1000', 'price100', 'price1' ])
+            ws.cell(row=row + 2, column=12).value = source.first_value([ 'price5000', 'price1000', 'price100', 'price1' ])
 
         return ws
 
@@ -277,7 +279,7 @@ class ExcelBom:
         except KeyError:
             ws = self.wb.create_sheet(name)
 
-        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'quantity', 'price', 'price1', 'price100', 'price1000', 'price5000' ]
+        headings = [ 'refs', 'footprint', 'value', 'mfn', 'mfp', 'source', 'critical', 'inventory', 'quantity', 'price', 'price1', 'price100', 'price1000', 'price5000' ]
         for c, name in enumerate(headings):
             ws.cell(row=1, column=c + 1).value = name
 
@@ -291,13 +293,14 @@ class ExcelBom:
             ws.cell(row=row + 2, column=5).value = group.values('mfp')
             ws.cell(row=row + 2, column=6).value = group.values('source')
             ws.cell(row=row + 2, column=7).value = group.values('critical')
+            ws.cell(row=row + 2, column=8).value = group.values('inventory')
 
-            quantity_cell = ws.cell(row=row + 2, column=8)
-            price_cell = ws.cell(row=row + 2, column=9)
-            price1_cell = ws.cell(row=row + 2, column=10)
-            price100_cell = ws.cell(row=row + 2, column=11)
-            price1000_cell = ws.cell(row=row + 2, column=12)
-            price5000_cell = ws.cell(row=row + 2, column=13)
+            quantity_cell = ws.cell(row=row + 2, column=9)
+            price_cell = ws.cell(row=row + 2, column=10)
+            price1_cell = ws.cell(row=row + 2, column=11)
+            price100_cell = ws.cell(row=row + 2, column=12)
+            price1000_cell = ws.cell(row=row + 2, column=13)
+            price5000_cell = ws.cell(row=row + 2, column=14)
 
             quantity_cell.value = group.size()
             price1_cell.value = source.first_value([ 'price1' ])

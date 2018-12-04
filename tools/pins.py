@@ -37,7 +37,9 @@ class PinMap:
         return key + " (" + ", ".join(set(self._pins[key])) + ")"
 
     def pin_row(self, key):
-        return [self.pin_description(key)] + [b['pins'][key] for board_name, b in self._boards.iteritems()]
+        pns = [b['pins'][key] for board_name, b in self._boards.iteritems()]
+        good = len(set(pns)) == 1
+        return [self.pin_description(key)] + pns + ["Good" if good else ""]
 
 def configure_logging():
     logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s')
@@ -98,10 +100,10 @@ def main():
                     name = pin.name[0]
                     nets = ", ".join(netmap[ref][num]).replace("/", "")
                     combined[footprint].add(child_filename, ref, num, name, nets)
-                    logger.info("- %s %s %s" % (num, name, nets))
+                    if False: logger.info("- %s %s %s" % (num, name, nets))
 
     for fp, pm in combined.iteritems():
-        print("| " + (" | ".join(["Pin"] + pm.boards())) + " |")
+        print("| " + (" | ".join(["Pin"] + pm.boards() + [ "Status"])) + " |")
         for pin in pm.pins():
             print("| " + (" | ".join(pm.pin_row(pin))) + " |")
 

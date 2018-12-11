@@ -1,10 +1,13 @@
-(module conservify:HDR_2x5_Pitch1.27mm_SMD_JTAG_SWD (layer F.Cu) (tedit 5A9DD56F)
-  (fp_text reference J7 (at 0 -22.86) (layer F.SilkS) hide
-    (effects (font (size 0.8 0.8) (thickness 0.15)))
-  )
-  (fp_text value CONN-HDR-2x5 (at 0 4.572) (layer F.Fab) hide
+(module conservify:HDR_02x05_Pitch1.27mm_SMD_SWD (layer F.Cu) (tedit 5C06D43D)
+  (fp_text reference J2 (at 0 -4.235) (layer F.SilkS) hide
     (effects (font (size 1 1) (thickness 0.15)))
   )
+  (fp_text value CONN_02x05_SWD (at 0 4.235) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_line (start 1.7145 3.937) (end 1.7145 3.4925) (layer F.SilkS) (width 0.15))
+  (fp_line (start -1.7145 3.937) (end 1.7145 3.937) (layer F.SilkS) (width 0.15))
+  (fp_line (start -1.7145 3.4925) (end -1.7145 3.937) (layer F.SilkS) (width 0.15))
   (fp_line (start 3.175 -1.7) (end 3.175 1.7) (layer F.SilkS) (width 0.15))
   (fp_line (start -3.175 -1.7) (end -3.175 1.7) (layer F.SilkS) (width 0.15))
   (fp_line (start -3.45 -3.5) (end -3.45 3.5) (layer F.CrtYd) (width 0.05))

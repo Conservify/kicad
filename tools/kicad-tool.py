@@ -41,7 +41,7 @@ pretty_field_names = {
 class FieldsTablePart:
     def __init__(self, data):
         self.data = data
-        self.key = " ".join([data[v] for v in key_fields])
+        self.key = " ".join([str(data[v]) for v in key_fields])
 
     def first_value(self, keys):
         for key in keys:

@@ -17,7 +17,6 @@ timestamps {
             sh "wget https://github.com/fieldkit/weather/raw/master/hardware/module-board/fk-weather.sch"
 
             sh "wget https://github.com/fieldkit/naturalist/raw/master/hardware/sensor-board/fk-naturalist-sensors.sch"
-            sh "wget https://github.com/fieldkit/naturalist/raw/master/hardware/main-board/fk-naturalist.sch"
 
             // NOTE: The isolated_atlas?.sch files are included from fk-atlas.sch and so we skip listing them below to avoid processing them twice.
             sh "wget https://github.com/fieldkit/atlas/raw/master/hardware/fk-atlas.sch"
@@ -33,7 +32,7 @@ timestamps {
                 withPythonEnv('python') {
                     sh "rm -rf kifield-0.1.8 && tar xf kifield*.tar.gz && (cd kifield-0.1.8 && python setup.py install)"
 
-                    sh "python kicad-tool.py --bom ../fk-core.sch ../fk-naturalist.sch ../fk-naturalist-sensors.sch ../fk-sonar.sch ../fk-atlas.sch ../fk-weather.sch ../fk-weather-sensors.sch"
+                    sh "python kicad-tool.py --bom ../fk-core.sch ../fk-naturalist-sensors.sch ../fk-sonar.sch ../fk-atlas.sch ../fk-weather.sch ../fk-weather-sensors.sch"
 
                     sh "ls -alh"
                 }

@@ -10,5 +10,4 @@ FK=$HOME/fieldkit
                 $FK/sonar/hardware/fk-sonar.sch \
                 $FK/weather/hardware/module-board/fk-weather.sch \
                 $FK/weather/hardware/sensor-board/fk-weather-sensors.sch \
-                $FK/naturalist/hardware/main-board/fk-naturalist.sch \
                 $FK/naturalist/hardware/sensor-board/fk-naturalist-sensors.sch
